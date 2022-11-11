@@ -1,33 +1,49 @@
 import random
 import time
-
 import markup as markup
-from aiogram.types import ReplyKeyboardMarkup
-
+import asyncio
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, Message
 from config import tg_bot_token
-from aiogram import Bot, types
+from aiogram import Bot, types, executor
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
+from aiogram.dispatcher.filters import Command, Text
 
-bot = Bot(token=tg_bot_token)
+
+bot = Bot(token=tg_bot_token, parse_mode="HTML")
 dp = Dispatcher(bot)
 
 
-reply_keyboard = [["/start"]]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
+
+menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+        KeyboardButton(text='6'),
+        KeyboardButton(text='7')
+        ],
+        [
+        KeyboardButton(text='8'),
+        KeyboardButton(text='9'),
+        ]
+        ],
+    resize_keyboard=True)
+
+
+
+
 @dp.message_handler(commands=["start"])
 async def start_command(message: types.Message):
-    await message.answer("Hello, I`m smart password generator. I can help you to create safety password.")
+    await message.answer(f'Hello <b><u>{message.from_user.first_name} {message.from_user.last_name}</u></b>, I`m smart password generator. I can help you to create safety password.')
     time.sleep(1)
-    await message.answer("How many symbols of password do you want to create?")
+    await message.answer("How many symbols of password do you want to create?", reply_markup=menu)
 
 @dp.message_handler()
 async def get_password(message: types.Message):
     passlength = message.text
     try:
         passlength = int(passlength)
-        if passlength > 15 or passlength < 5:
-            await message.reply("We recommend to choose from 5 to 12 symbols")
+        if passlength > 21 or passlength < 5:
+            await message.reply("We recommend to choose from 6 to 20 symbols", reply_markup=menu)
         else:
             a = "abcdefghijklmnopqrstuvwxyz"
             b = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -39,9 +55,12 @@ async def get_password(message: types.Message):
             time.sleep(1)
             await message.answer(f"Your password: {password}")
             time.sleep(2)
-            await message.answer("One more password? Just enter the number :)")
+            await message.answer("One more password? Just enter the number :)", reply_markup=menu)
     except Exception as ex2:
         print(ex2)
         await message.answer("Enter the number of symbols from 5 to 15")
+
+
+
 if __name__ == "__main__":
     executor.start_polling(dp)
